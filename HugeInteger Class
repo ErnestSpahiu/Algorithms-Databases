@@ -1,0 +1,159 @@
+import java.security.InvalidParameterException;
+import java.util.Random;
+
+public class HugeInteger {
+
+
+	//Array containing the digits of a large number
+	private int hugeInt[];
+	//Holds the size of the array - number of digits in the number
+	private int intSize;
+	int sign;
+	
+	public HugeInteger(String val) {
+		//Checking if the value is negative, if yes - must have length > 1
+		if (val.charAt(0) == '-' && val.length() > 1) {
+			//Initializing the array size for array holding the large value
+			intSize = val.length()-1;
+			hugeInt = new int[intSize];
+			sign = 0;
+
+			//Inputing the integer values of each character into the array
+			for (int i=0; i<val.length()-1; i++ ){
+				//If the value of the character is a digit then input the digit into the array
+				if (Character.isDigit(val.charAt(i+1)) == true) {
+					hugeInt[i] = Character.getNumericValue(val.charAt(i+1));
+				}
+				else {
+					throw new InvalidParameterException("One of the values is not a valid number");
+				}
+			}
+		}
+		//Checking if it is not negative and not null
+		else if (val.length() > 0) {;
+			intSize = val.length();
+			hugeInt = new int[intSize];
+			sign = 1;
+			
+			//Check if each character in string is an integer then add to array
+			for (int i=0; i<val.length(); i++ ){
+				if (Character.isDigit(val.charAt(i)) == true) {
+					hugeInt[i] = Character.getNumericValue(val.charAt(i));
+				}
+				else {
+					throw new InvalidParameterException("One of the values is not a valid number");
+				}
+			}
+		}
+		//Else the value is null
+		else {
+			throw new InvalidParameterException("There is no value");
+		}
+	}
+	public HugeInteger(int n) {
+		if (n>=1) {
+			intSize = n;
+			hugeInt = new int[n];
+			//Making sure the first element is not 0
+			//random.nextInt(max - min) + min;
+			hugeInt[0] = (new Random().nextInt(10+9) - 9);
+			while (hugeInt[0]==0){
+				hugeInt[0] = (new Random() .nextInt(10+9) - 9);
+			}
+			//For the rest of the elements, the digit is a number between 0 and 9
+			if (n>1) {
+				for (int i=1;i<n;i++){
+					hugeInt[i] = new Random().nextInt(10);
+				}
+			}
+		}
+		else {
+			throw new InvalidParameterException("Invalid number of digits");
+		}
+	}
+
+	public HugeInteger add(HugeInteger h){
+		int num[];
+		int size;
+		String regNum = "";
+		//If the current object has more digits, make that the new size
+		if (this.intSize >= h.intSize){
+			size = this.intSize -1;
+			//Counter for shorter array
+			int hSize = h.intSize -1;
+			num = new int[this.intSize];
+			//Iterate through both arrays storing digits, starting at end
+			for (int i=size;i>=0;i--){
+				//Add the numbers until one of the arrays ends 
+				if (hSize >=0){
+					num[i] = (this.hugeInt[i] + h.hugeInt[hSize]);
+				}
+				//The rest of the digits are then just from the larger array
+				else {
+					num[i] = this.hugeInt[i];
+				}
+				hSize--;
+				//If addition results in overflow, carry the remainder over
+				if ((i <size) && (num[i+1]>9)) {
+					num[i+1] = (num[i+1] - 10);
+					num[i] += 1;
+				}
+			}
+			//Collect the array values and store them in a String
+			for (int k=0;k<this.intSize;k++) {
+				regNum += Integer.toString(num[k]);
+			}
+		}
+		//Same process, this time h is the larger array
+		else if (this.intSize < h.intSize){
+			size = h.intSize -1;
+			int thisSize = this.intSize -1;
+			num = new int[h.intSize];
+
+			for (int i=size;i>=0;i--){
+				if (thisSize >=0){
+					num[i] = (this.hugeInt[thisSize] + h.hugeInt[i]);
+				}
+				else {
+					num[i] = h.hugeInt[i];
+				}
+				thisSize--;
+
+				if ((i <size) && (num[i+1]>9)) {
+					num[i+1] = (num[i+1] - 10);
+					num[i] += 1;
+				}
+			}
+			for (int k=0;k<h.intSize;k++) {
+				regNum += Integer.toString(num[k]);
+			}
+		}
+		else {
+			throw new InvalidParameterException("Invalid Parameter");
+		}
+		HugeInteger result = new HugeInteger(regNum);
+		return result;
+	}
+	
+	public static void main(String[] args) {
+		HugeInteger mm = new HugeInteger("008000");
+		System.out.print(mm.toString());
+		System.out.print('\n');
+		HugeInteger aa = new HugeInteger("4923");
+		System.out.print(aa.toString());
+		System.out.print('\n');
+		HugeInteger cc = new HugeInteger(3);
+		System.out.print(cc.toString());
+		System.out.print('\n');
+		
+		System.out.print(mm.add(aa).toString());
+	}
+	public String toString(){
+		String result = "";
+		for (int i=0;i<this.intSize;i++){
+			result += Integer.toString(this.hugeInt[i]);
+		}
+		return result;
+	}
+	
+}
