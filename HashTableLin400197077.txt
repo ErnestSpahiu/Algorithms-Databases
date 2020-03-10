@@ -1,0 +1,162 @@
+public class HashTableLin {
+    private Integer[] table;
+    private int tableSize;
+    private int numOfKeys;
+    private double maxLoadFactor;
+    private int maxKeys;
+    private int probeCount;
+
+    public HashTableLin(int maxNum, double load){
+        this.numOfKeys = 0;
+        int size = (int) (maxNum/load);
+        size ++;
+
+        int primeCh = 0;
+        while(true){
+            primeCh = 0;
+            //check multipliers to see if the number is prime, if not then keep increasing size
+            //until a prime value is reached
+            for(int i=2; i<= Math.sqrt(size);i++){
+                if(size % i == 0){
+                    primeCh += 1;
+                    break;
+                }
+            }
+            if (primeCh == 0){
+                break;
+            }
+            size ++;
+        }
+        this.tableSize = size;
+        this.table = new Integer[size];
+        this.maxLoadFactor = load;
+        this.maxKeys = maxNum;
+        this.probeCount = 0;
+    }
+
+    public void insert(int n){
+        int i = n % this.tableSize;
+        if (isIn(n) != true){
+            this.numOfKeys ++;
+            //check to see if the table size has been exceeded
+            if (this.numOfKeys > this.maxKeys){
+                this.rehash();
+            }
+            //if index is within the table and does not have a value, assign the key
+            if (i < this.tableSize && this.table[i] == null){
+                this.table[i] = n;
+                this.probeCount++;
+            }
+            //else find the next avaialable slot
+            else if (this.table[i] != null){
+                this.probeCount++;
+                while (this.table[i] != null){
+                    i++;
+                    this.probeCount++;
+                    //if table size is exceeded go back to beginnning
+                    if (!(i < this.tableSize)) {
+                        i = 0;
+                    }
+                }
+                this.table[i] = n;
+            }
+        }
+    }
+
+    private void rehash() {
+        //Make an array to copy down values in table
+        int[] values = new int[this.numOfKeys+1];
+        int count = 0;
+        for (int i = 0;i<this.tableSize;i++){
+            if(this.table[i] != null){
+                values[count] = this.table[i];
+                count++;
+            }
+        }
+
+        //define new size of table, must be prime number again
+        int newSize = this.tableSize*2;
+        
+        int primeCh = 0;
+        while(true){
+            primeCh = 0;
+            //check multipliers to see if the number is prime, if not then keep increasing size
+            //until a prime value is reached
+            for(int i=2; i<= Math.sqrt(newSize);i++){
+                if(newSize % i == 0){
+                    primeCh += 1;
+                    break;
+                }
+            }
+            if (primeCh == 0){
+                break;
+            }
+            newSize++;
+        }
+        //define table with the new values
+        this.tableSize = newSize;
+        this.table = new Integer[newSize];
+        this.numOfKeys = 0;
+        this.maxKeys = (int) (this.maxLoadFactor * newSize);
+        System.out.println(this.tableSize);
+        //reinsert the old keys
+        for (int i=0;i<values.length;i++){
+            this.insert(values[i]);
+        }
+    }
+
+    public boolean isIn(int n){
+        int hasFullyLoopedCheck = 0;
+        //keep iterating until key is found or all keys have been searched
+        for (int i = (n % this.tableSize); i < 10000000; i++){
+            //if end of table has not been reached, check the value
+            if (i < this.tableSize){
+                if (this.table[i] != null && this.table[i] == n){
+                    return true;
+                }
+            }
+            //if end is reached and it has already iterated through entire table return false
+            else if (i >= this.tableSize && hasFullyLoopedCheck == 1){
+                return false;
+            }
+            //if end is reached, go back ot the beginning 
+            else {
+                i = -1;
+                hasFullyLoopedCheck = 1;
+            }
+        }
+        return false;
+    }
+
+    public void printKeysAndIndexes(){
+        for (int i=0;i<this.tableSize;i++){
+            if (this.table[i] == null){
+            }
+            else {
+                System.out.print("--[" + i + "]--  value: " + this.table[i]+ "  ");
+            }
+        }
+    }
+    public void printKeys (){
+        for (int i=0;i<this.tableSize;i++){
+            if (this.table[i] == null){
+            }
+            else {
+                System.out.print("--[" + this.table[i]+ "] -- ");
+            }
+        }
+    }
+
+    public int getSize(){
+        return this.tableSize;
+    }
+    public double getMaxLoadFactor(){
+        return this.maxLoadFactor;
+    }
+    public int getNumOfKeys(){
+        return this.numOfKeys;
+    }
+    public int getProbeCount(){
+        return this.probeCount;
+    }
+}
